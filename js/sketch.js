@@ -77,11 +77,11 @@ function makeControls() {
   // Buttons
   makeButton("Pause", controlWrapper, noLoop);
   makeButton("Resume", controlWrapper, loop);
-  makeButton("Clear&nbsp;&nbsp;", controlWrapper, clearContent);
+  makeButton("Clear", controlWrapper, clearContent);
   makeButton("Download", controlWrapper, () => download());
   makeButton("About", controlWrapper, () => {}, "modal");
   makeButton("GitHub", controlWrapper, () => {
-    window.open("https://github.com/mkfreeman/flowFields", "_blank");
+    window.open("https://github.com/mkfreemaan/imageFields", "_blank");
   });
   return controlWrapper;
 }
