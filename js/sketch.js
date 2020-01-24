@@ -11,12 +11,23 @@ let flowfield = [];
 let canvas;
 let nrow, ncol, rectWidth, rectHeight;
 let xIncrementSlider, yIncrementSlider, zIncrementSlider, particleSlider, opacitySlider, strokeColorPicker, backgroundColorPicker;
+// Upload photo
+let img;
+
+function imageUpload(file) {
+  img = loadImage(file.data, function () {
+    image(img, 0, 0, width, height);
+    createEmptyParticles();
+  });
+}
 
 function makeControls() {
   // Controls 
   let controlWrapper = createDiv().id("control-wrapper");
   let controlHeader = createDiv("<h2>Controls</h2>");
   controlHeader.parent(controlWrapper);
+  let fileInput = createFileInput(imageUpload);
+  fileInput.parent(controlWrapper);
   nrowSlider = makeSlider("Vertical Anchors", minVal = 2, maxVal = 50, value = 30, step = 1, parent = controlWrapper, clearContent);
   ncolSlider = makeSlider("Horizontal Anchors", minVal = 2, maxVal = 50, value = 30, step = 1, parent = controlWrapper, clearContent);
   xIncrementSlider = makeSlider("Horizontal Smoothness", minVal = .0001, maxVal = .3, value = .05, step = .0001, parent = controlWrapper, clearContent);
@@ -54,9 +65,9 @@ function createEmptyParticles() {
 
 // Clear content
 function clearContent() {
-  clear();  
+  clear();
   createEmptyParticles();
-  flowfield = [];  
+  flowfield = [];
   xoff = X_START = random(100);
   yoff = random(100);
   zoff = random(100);
@@ -90,7 +101,7 @@ function setup() {
 
   // Set color mode to RGB percentages  
   colorMode(RGB, 100);
-  
+
   // Create set of particles
   getSize();
   createEmptyParticles();
@@ -104,20 +115,22 @@ function getSize() {
   rectHeight = height / nrow;
 }
 
-function draw() {  
-  getSize();  
+function draw() {
+  getSize();
   // Iterate through grid and set vector forces
   for (let row = 0; row < nrow; row++) {
     for (let col = 0; col < ncol; col++) {
       let angle = noise(xoff, yoff, zoff) * 4 * PI;
       var v = p5.Vector.fromAngle(angle);
-      v.setMag(1);      
+      v.setMag(1);
       flowfield.push([v.x, v.y]);
       xoff += xIncrementSlider.value();
     }
     xoff = X_START;
     yoff += yIncrementSlider.value();
   }
+  // loadPixels();
+  // let d = pixelDensity();
 
   // Position particles given field of vector forces
   for (var i = 0; i < particles.length; i++) {

@@ -1,14 +1,11 @@
-// Daniel Shiffman
-// http://codingtra.in
-// http://patreon.com/codingtrain
-// Code for: https://youtu.be/BjoM9oKOAKY
+// Originally written by Daniel Shiffman for https://youtu.be/BjoM9oKOAKY
 
 function Particle(cellWidth = 400, cellHeight = 400) {
     this.pos = createVector(random(width), random(height));
     this.vel = createVector(0, 0);
     this.acc = createVector(0, 0);
     this.maxspeed = 2;
-
+    
     this.prevPos = this.pos.copy();
 
     this.update = function () {
@@ -31,15 +28,24 @@ function Particle(cellWidth = 400, cellHeight = 400) {
     };
 
     this.getColor = function() {
-        let color = strokeColorPicker.color()._array.slice(0, 3)
-            .concat(opacitySlider.value())
-            .map((d) => d * 100);
-        return(color);
+        let c = get(this.pos.x, this.pos.y).map(d => d / 255 * 100);
+        // console.log(c)
+        // console.log(components, off, this.pos, this.cellWidth);
+
+        // let color = strokeColorPicker.color()._array.slice(0, 3)
+        //     .concat(opacitySlider.value())
+        //     .map((d) => d * 100);
+        // console.log(c, this.pos);
+        return(c);
     }
+
+    this.color = this.getColor(); // only color at start of image....(?)
+
     this.show = function () {        
-        stroke(this.getColor());
+        // stroke(this.getColor());
+        stroke(this.color);
         
-        strokeWeight(.3);
+        // strokeWeight(.3);
         line(this.pos.x, this.pos.y, this.prevPos.x, this.prevPos.y);
         this.updatePrev();
     };
