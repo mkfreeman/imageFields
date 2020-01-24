@@ -10,15 +10,44 @@ let particles = [];
 let flowfield = [];
 let canvas;
 let nrow, ncol, rectWidth, rectHeight;
-let xIncrementSlider, yIncrementSlider, zIncrementSlider, particleSlider, opacitySlider, strokeColorPicker, backgroundColorPicker;
+let xIncrementSlider, yIncrementSlider, zIncrementSlider, particleSlider, opacitySlider;
+
 // Upload photo
 let img;
+let imgPreview;
+
+function showImage() {
+  image(img, 0, 0, width, height);
+}
 
 function imageUpload(file) {
   img = loadImage(file.data, function () {
-    image(img, 0, 0, width, height);
+    showImage(img);
+    makeImagePreview(imgPreview, img);
     createEmptyParticles();
+    hideImage();
   });
+}
+
+function hideImage() {
+  background("white");
+}
+
+function makeImagePreview(containerDiv, img) {
+  // Empty div, if there is already an image
+  containerDiv.html("")
+
+  // For now, make it as a p5 sketch -- a little overkill
+  const s = ( sketch ) => {
+    sketch.setup = () => {
+      sketch.createCanvas(200, 200);      
+      sketch.noLoop();
+    };
+    sketch.draw = () => {
+      sketch.image(img, 0, 0, 200, 200);
+    }
+  };
+  new p5(s, containerDiv.id());
 }
 
 function makeControls() {
@@ -26,23 +55,30 @@ function makeControls() {
   let controlWrapper = createDiv().id("control-wrapper");
   let controlHeader = createDiv("<h2>Controls</h2>");
   controlHeader.parent(controlWrapper);
+
+  // File input
+  let fileInputWrapper = createDiv("<label id='file_label' for='file'>Upload File</label");
   let fileInput = createFileInput(imageUpload);
-  fileInput.parent(controlWrapper);
+  fileInput.id("file"); 
+  fileInput.parent(fileInputWrapper);
+  fileInputWrapper.parent(controlWrapper);
+  imgPreview = createDiv().id("img_preview");
+  imgPreview.parent(controlWrapper);
+
   nrowSlider = makeSlider("Vertical Anchors", minVal = 2, maxVal = 50, value = 30, step = 1, parent = controlWrapper, clearContent);
   ncolSlider = makeSlider("Horizontal Anchors", minVal = 2, maxVal = 50, value = 30, step = 1, parent = controlWrapper, clearContent);
   xIncrementSlider = makeSlider("Horizontal Smoothness", minVal = .0001, maxVal = .3, value = .05, step = .0001, parent = controlWrapper, clearContent);
   yIncrementSlider = makeSlider("Vertical Smoothness", minVal = .0001, maxVal = .3, value = .05, step = .0001, parent = controlWrapper, clearContent);
   zIncrementSlider = makeSlider("Fluctuations in Forces", minVal = 0, maxVal = .3, value = .01, step = .0001, parent = controlWrapper, clearContent);
-  particleSlider = makeSlider("Number of Particles", minVal = 10, maxVal = 10000, value = 500, step = 10, parent = controlWrapper, clearContent);
-  opacitySlider = makeSlider("Line Opacity", minVal = 0, maxVal = 1, value = .1, step = .01, parent = controlWrapper);
-  strokeColorPicker = makeColorPicker("Line Color", startColor = "rgb(216, 60, 95)", parent = controlWrapper);
-  backgroundColorPicker = makeColorPicker("Background Color", startColor = "white", parent = controlWrapper, (d) => setBackgroundColor(d));
+  particleSlider = makeSlider("Number of Particles", minVal = 10, maxVal = 10000, value = 500, step = 10, parent = controlWrapper, clearContent);  
+  opacitySlider = makeSlider("Opacity", minVal = 1, maxVal = 100, value = 30, step = 1, parent = controlWrapper);
+  speedSlider = makeSlider("Maximum Particle Velocity", minVal = 1, maxVal = 5, value = 1, step = 1, parent = controlWrapper);
 
   // Buttons
   makeButton("Pause", controlWrapper, noLoop);
   makeButton("Resume", controlWrapper, loop);
   makeButton("Clear&nbsp;&nbsp;", controlWrapper, clearContent);
-  makeButton("Download", controlWrapper, download);
+  makeButton("Download", controlWrapper, () => download());
   makeButton("About", controlWrapper, () => {}, "modal");
   makeButton("GitHub", controlWrapper, () => {
     window.open("https://github.com/mkfreeman/flowFields", "_blank");
@@ -50,23 +86,19 @@ function makeControls() {
   return controlWrapper;
 }
 
-// Function to set background color
-function setBackgroundColor() {
-  // Avoids clearing the content
-  canvas.style("background-color", backgroundColorPicker.value())
-}
 // Create particles
 function createEmptyParticles() {
   particles = [];
   for (let i = 0; i < particleSlider.value(); i++) {
-    particles[i] = new Particle(rectWidth, rectHeight);
+    particles[i] = new Particle(rectWidth, rectHeight, () => speedSlider.value());
   }
 }
 
 // Clear content
 function clearContent() {
-  clear();
+  showImage();
   createEmptyParticles();
+  hideImage();
   flowfield = [];
   xoff = X_START = random(100);
   yoff = random(100);
@@ -78,7 +110,7 @@ function download() {
   noLoop(); // pause
   let link = document.createElement('a');
   link.download = 'noise_field.png';
-  link.href = document.querySelector('canvas').toDataURL()
+  link.href = document.querySelector('.p5_canvas').toDataURL()
   link.click();
 }
 
@@ -128,9 +160,7 @@ function draw() {
     }
     xoff = X_START;
     yoff += yIncrementSlider.value();
-  }
-  // loadPixels();
-  // let d = pixelDensity();
+  }  
 
   // Position particles given field of vector forces
   for (var i = 0; i < particles.length; i++) {
