@@ -1,5 +1,9 @@
 // Main script to construct the noise field
 
+// Compute maximum size -- this may come in handy for geting a good aspect ratio
+// let widthRatio = width / img.width;
+// let heightRatio = height / img.height;
+// let ratio = min(widthRatio, heightRatio);
 // "Global" variables
 let X_START = 0;
 const Y_START = 0;
@@ -9,13 +13,14 @@ let zoff = 0;
 let particles = [];
 let flowfield = [];
 let canvas;
+let imgSample;
 let nrow, ncol, rectWidth, rectHeight;
-let xIncrementSlider, yIncrementSlider, zIncrementSlider, particleSlider, opacitySlider;
+let xIncrementSlider, yIncrementSlider, zIncrementSlider, particleSlider, opacitySlider, strokeWeightSlider;
 
 // Upload photo
 let img;
 let imgPreview;
-
+let previewGet;
 function showImage() {
   image(img, 0, 0, width, height);
 }
@@ -38,18 +43,20 @@ function makeImagePreview(containerDiv, img) {
   containerDiv.html("")
 
   // For now, make it as a p5 sketch -- a little overkill
-  const s = ( sketch ) => {
+  s = ( sketch ) => {
     sketch.setup = () => {
       sketch.createCanvas(200, 200);      
       sketch.noLoop();
+      previewGet = sketch.get;
     };
-    sketch.draw = () => {
+    sketch.draw = () => {      
       sketch.image(img, 0, 0, 200, 200);
     }
   };
-  new p5(s, containerDiv.id());
+  imgSample = new p5(s, containerDiv.id());
 }
 
+// console.log(s.get)
 function makeControls() {
   // Controls 
   let controlWrapper = createDiv().id("control-wrapper");
@@ -65,13 +72,14 @@ function makeControls() {
   imgPreview = createDiv().id("img_preview");
   imgPreview.parent(controlWrapper);
 
+  particleSlider = makeSlider("Number of Particles", minVal = 10, maxVal = 10000, value = 500, step = 10, parent = controlWrapper, clearContent);  
+  opacitySlider = makeSlider("Opacity", minVal = 1, maxVal = 100, value = 30, step = 1, parent = controlWrapper);
+  strokeWeightSlider = makeSlider("Stroke Weight", minVal = .5, maxVal = 20, value = 2, step = .5, parent = controlWrapper);
   nrowSlider = makeSlider("Vertical Anchors", minVal = 2, maxVal = 50, value = 30, step = 1, parent = controlWrapper, clearContent);
   ncolSlider = makeSlider("Horizontal Anchors", minVal = 2, maxVal = 50, value = 30, step = 1, parent = controlWrapper, clearContent);
   xIncrementSlider = makeSlider("Horizontal Smoothness", minVal = .0001, maxVal = .3, value = .05, step = .0001, parent = controlWrapper, clearContent);
   yIncrementSlider = makeSlider("Vertical Smoothness", minVal = .0001, maxVal = .3, value = .05, step = .0001, parent = controlWrapper, clearContent);
   zIncrementSlider = makeSlider("Fluctuations in Forces", minVal = 0, maxVal = .3, value = .01, step = .0001, parent = controlWrapper, clearContent);
-  particleSlider = makeSlider("Number of Particles", minVal = 10, maxVal = 10000, value = 500, step = 10, parent = controlWrapper, clearContent);  
-  opacitySlider = makeSlider("Opacity", minVal = 1, maxVal = 100, value = 30, step = 1, parent = controlWrapper);
   speedSlider = makeSlider("Maximum Particle Velocity", minVal = 1, maxVal = 5, value = 1, step = 1, parent = controlWrapper);
 
   // Buttons
@@ -90,7 +98,7 @@ function makeControls() {
 function createEmptyParticles() {
   particles = [];
   for (let i = 0; i < particleSlider.value(); i++) {
-    particles[i] = new Particle(rectWidth, rectHeight, () => speedSlider.value());
+    particles[i] = new Particle(rectWidth, rectHeight, imgSample, () => speedSlider.value());
   }
 }
 
@@ -136,7 +144,7 @@ function setup() {
 
   // Create set of particles
   getSize();
-  createEmptyParticles();
+  // createEmptyParticles();
 }
 
 function getSize() {
@@ -149,6 +157,7 @@ function getSize() {
 
 function draw() {
   getSize();
+  strokeWeight(strokeWeightSlider.value());
   // Iterate through grid and set vector forces
   for (let row = 0; row < nrow; row++) {
     for (let col = 0; col < ncol; col++) {

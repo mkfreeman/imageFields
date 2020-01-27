@@ -1,6 +1,6 @@
 // Originally written by Daniel Shiffman for https://youtu.be/BjoM9oKOAKY
 
-function Particle(cellWidth = 400, cellHeight = 400, getSpeed = () => 2) {
+function Particle(cellWidth = 400, cellHeight = 400, imageSampleP5, getSpeed = () => 2) {
     this.pos = createVector(random(width), random(height));
     this.vel = createVector(0, 0);
     this.acc = createVector(0, 0);
@@ -28,15 +28,20 @@ function Particle(cellWidth = 400, cellHeight = 400, getSpeed = () => 2) {
     };
 
     this.getColor = function() {
-        let c = get(this.pos.x, this.pos.y).map(d => d / 255 * 100);                
+        // transform from drawing size to preview size to get color
+        let x = imageSampleP5.width/width * this.pos.x;
+        let y = imageSampleP5.height/height * this.pos.y;
+        let c = imageSampleP5.get(x ,y).map(d => d / 255 * 100);                
         if(c[3] !== 0) c[3] = opacitySlider.value();
         return(c);
     }
 
     this.color = this.getColor(); // only color at start of image....(?)
 
-    this.show = function () {        
-        stroke(this.color);        
+    this.show = function () {
+        // let color = this.getColor()
+        // console.log(color, this.pos.x, this.pos.y)
+        stroke(this.getColor());        
         line(this.pos.x, this.pos.y, this.prevPos.x, this.prevPos.y);
         this.updatePrev();
     };
