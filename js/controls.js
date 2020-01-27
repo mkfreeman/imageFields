@@ -11,6 +11,22 @@ function makeSlider(label, minVal = 0, maxVal = 50, value = 10, step = 1, parent
     return (slider);
   }
   
+// Write a function to create a select dropdown
+function makeSelect(label = "Select an option", options = [1, 2, 3], value = 1, parent = createDiv(), update = () => {}) {
+  let wrapper = createDiv(label);
+  wrapper.parent(parent);
+  wrapper.class("slider");
+  let select = createSelect(true);
+  options.forEach((option) => {
+    select.option(option)
+  })
+  select.value(value);
+  select.changed(update); // function to do on update
+  // select.class("form-control-range")
+  select.parent(wrapper);
+  return (select);
+}
+
   // Function to make a button
   function makeButton(text, parent, callback, type = "not_modal") {
     let buttonWrapper = createDiv();

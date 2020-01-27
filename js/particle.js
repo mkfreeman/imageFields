@@ -1,60 +1,28 @@
-// Originally written by Daniel Shiffman for https://youtu.be/BjoM9oKOAKY
 
-function Particle(cellWidth = 400, cellHeight = 400, imageSampleP5, getSpeed = () => 2) {
-    this.pos = createVector(random(width), random(height));
-    this.vel = createVector(0, 0);
-    this.acc = createVector(0, 0);
-    
-    this.prevPos = this.pos.copy();
+function Particle(xpos = 400, ypos = 400, cellWidth, cellHeight, imageSampleP5) {
+    this.pos = createVector(xpos, ypos);
 
-    this.update = function () {
-        this.maxspeed = getSpeed();
-        this.vel.add(this.acc);
-        this.vel.limit(this.maxspeed);
-        this.pos.add(this.vel);
-        this.acc.mult(0);
-    };
-
-    this.follow = function (vectors) {
-        var x = floor(this.pos.x / cellWidth);
-        var y = floor(this.pos.y / cellHeight);
-        var index = x + y * ncol;        
-        var force = vectors[index];        
-        this.applyForce(force);
-    };
-
-    this.applyForce = function (force) {
-        this.acc.add(force);
-    };
-
-    this.getColor = function() {
+    this.getColor = function() {        
         // transform from drawing size to preview size to get color
-        let x = imageSampleP5.width/width * this.pos.x;
-        let y = imageSampleP5.height/height * this.pos.y;
+        let x = floor(imageSampleP5.width/width * this.pos.x);
+        let y = floor(imageSampleP5.height/height * this.pos.y);
         let c = imageSampleP5.get(x ,y).map(d => d / 255 * 100);                
         if(c[3] !== 0) c[3] = opacitySlider.value();
+        // console.log(x, y , c)
         return(c);
     }
 
-    this.color = this.getColor(); // only color at start of image....(?)
-
     this.show = function () {
-        // let color = this.getColor()
-        // console.log(color, this.pos.x, this.pos.y)
-        stroke(this.getColor());        
-        line(this.pos.x, this.pos.y, this.prevPos.x, this.prevPos.y);
-        this.updatePrev();
-    };
-
-    this.updatePrev = function () {
-        this.prevPos.x = this.pos.x;
-        this.prevPos.y = this.pos.y;
-    };
-
-    this.edges = function () {
-        if (this.pos.x > width | this.pos.x < 0 | this.pos.y > height | this.pos.y < 0) {
-            this.pos = createVector(random(width), random(height));
-            this.updatePrev();
-        }
+        // only draw the selected color
+        // let color = [0, 0, 0, opacitySlider.value()];
+        // color[xSelect.value()] = this.getColor()[xSelect.value()]
+        // let color = [0, 0, 0, opacitySlider.value()];
+        // color[xSelect.value()] = this.getColor()[xSelect.value()]
+        let color = this.getColor();
+        let xChange = color[xSelect.value()] / 100 * cellWidth
+        let yChange = color[ySelect.value()] / 100 * height
+        stroke(color);        
+        line(this.pos.x, this.pos.y, this.pos.x + xChange, this.pos.y + yChange);
+        // this.updatePrev();
     };
 }
