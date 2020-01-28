@@ -135,9 +135,10 @@ function setup() {
   let controls = makeControls();
   controls.parent(container);
   let canvasContainer = createDiv();
-  canvas = createCanvas(windowWidth, windowHeight).class("p5_canvas");
+  console.log(container)
+  canvas = createCanvas(windowWidth, windowHeight, SVG).class("p5_canvas");
   canvasContainer.parent(container);
-  canvas.parent(canvasContainer);
+  // canvas.parent(canvasContainer);
 
   // Set color mode to RGB percentages  
   colorMode(RGB, 100);
